@@ -231,7 +231,7 @@ namespace CS2RemoteUtilsPlugin
 
       if (@event?.Userid != null)
       {
-        playerControllerDictionary[$"{@event.Userid.PlayerName}"] = @event.Userid;
+        playerControllerDictionary[$"{@event.Userid.SteamID}"] = @event.Userid;
       }
 
       return HookResult.Continue;
@@ -245,7 +245,7 @@ namespace CS2RemoteUtilsPlugin
 
         if (data.MatchData != null)
         {
-          if (@event.Winner == 1)
+          if (@event.Winner == 3)
           {
             data.MatchData.CTRoundWins += 1;
           }
@@ -358,9 +358,9 @@ namespace CS2RemoteUtilsPlugin
       {
         foreach (var player in data.Players)
         {
-          if (playerControllerDictionary.ContainsKey($"{player.PlayerName}"))
+          if (playerControllerDictionary.ContainsKey($"{player.Xuid}"))
           {
-            var playerController = playerControllerDictionary[$"{player.PlayerName}"];
+            var playerController = playerControllerDictionary[$"{player.Xuid}"];
 
             player.Kills = playerController?.ActionTrackingServices?.MatchStats.Kills;
             player.Assists = playerController?.ActionTrackingServices?.MatchStats.Assists;
