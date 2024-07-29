@@ -246,10 +246,7 @@ namespace CS2RemoteUtilsPlugin
       if (@event?.Userid != null)
       {
         playerControllerDictionary[$"{@event.Userid.SteamID}"] = @event.Userid;
-        playerControllerDictionary[$"{@event.Userid.SteamID}"].SwitchTeam(@event.Userid.TeamNum == (int)CsTeam.CounterTerrorist ? CsTeam.Terrorist : CsTeam.CounterTerrorist);
       }
-
-      TryAutoBalance();
 
       return HookResult.Continue;
     }
@@ -439,75 +436,6 @@ namespace CS2RemoteUtilsPlugin
       }
 
       return 0;
-    }
-
-    private void TryAutoBalance()
-    {
-      var players = playerControllerDictionary.Values.ToList();
-
-      this.PrintToPlayerOrServer($"[Auto Balance] -> TryAutoBalance players {players.Count}");
-
-      if (players.Count <= 0)
-      {
-        return;
-      }
-
-      foreach (var player in playerControllerDictionary.Values)
-      {
-        this.PrintToPlayerOrServer($"[Auto Balance] -> TryAutoBalance playerTeamNum {player.TeamNum} isbot {player.IsBot}");
-      }
-
-      var currentlyPlaying = players.FindAll(x => (x.TeamNum is (int)CsTeam.CounterTerrorist or (int)CsTeam.Terrorist) && !x.IsBot);
-
-      this.PrintToPlayerOrServer($"[Auto Balance] -> TryAutoBalance currentlyPlaying {currentlyPlaying.Count}");
-
-      var ctPlayers = currentlyPlaying.FindAll(x => x.TeamNum == (int)CsTeam.CounterTerrorist);
-      var trPlayers = currentlyPlaying.FindAll(x => x.TeamNum == (int)CsTeam.Terrorist);
-
-      var difference = Math.Abs(ctPlayers.Count - trPlayers.Count);
-
-      this.PrintToPlayerOrServer($"[Auto Balance] -> TryAutoBalance difference {difference} ctPlayers: {ctPlayers.Count} trPlayers: {trPlayers.Count}");
-
-      if (difference <= 1)
-      {
-        return;
-      }
-
-      var playersToSend = (int)Math.Round(difference / 2f);
-      var teamWithMostPlayers = trPlayers.Count > ctPlayers.Count ? trPlayers : ctPlayers;
-      var shuffledTeamPlayers = teamWithMostPlayers.OrderBy(a => Guid.NewGuid()).ToList().GetRange(0, playersToSend);
-
-      if (teamWithMostPlayers == trPlayers)
-      {
-        this.PrintToPlayerOrServer($"[Auto Balance] -> Sending {playersToSend} players to the CT Team");
-      }
-      else if (teamWithMostPlayers == ctPlayers)
-      {
-        this.PrintToPlayerOrServer($"[Auto Balance] -> Sending {playersToSend} players to the TR Team");
-      }
-
-      this.PrintToPlayerOrServer($"[Auto Balance] -> TryAutoBalance shuffledTeamPlayers {shuffledTeamPlayers.Count}");
-
-      foreach (var playerToSend in shuffledTeamPlayers)
-      {
-        var teamToSend = playerToSend.TeamNum == (int)CsTeam.Terrorist
-            ? CsTeam.CounterTerrorist
-            : CsTeam.Terrorist;
-
-        var teamAbbreviation = (CsTeam)playerToSend.TeamNum == CsTeam.Terrorist ? "T" :
-            (CsTeam)playerToSend.TeamNum == CsTeam.CounterTerrorist ? "CT"
-            : "Unknown";
-
-        playerToSend.SwitchTeam(teamToSend);
-
-        var autoBalanceMessage = "[Auto Balance] -> Switched {_playerName} to {_switchedTeam}";
-
-        var tempAutoBalanceMessage = autoBalanceMessage.Replace("{_playerName}", playerToSend.PlayerName);
-        tempAutoBalanceMessage = tempAutoBalanceMessage.Replace("{_switchedTeam}", teamAbbreviation);
-
-
-        this.PrintToPlayerOrServer(tempAutoBalanceMessage);
-      }
     }
 
     private string PluginInfo()
